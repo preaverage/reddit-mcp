@@ -22,10 +22,10 @@ npx -y @preaverage/reddit-mcp login
 Then point Claude Code at it:
 
 ```sh
-claude mcp add --scope user --transport stdio reddit -- npx -y @preaverage/reddit-mcp
+claude mcp add --scope user reddit -- npx -y @preaverage/reddit-mcp
 ```
 
-The user scope makes it available in every project rather than only the directory you ran that in.
+The user scope makes it available in every project rather than only the directory you ran that in. Restart Claude Code afterwards, since a running session does not pick up a newly added server.
 
 Any client that reads a JSON config takes the same command:
 

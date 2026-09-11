@@ -1,5 +1,8 @@
 # reddit-mcp
 
+[![npm](https://img.shields.io/npm/v/@preaverage/reddit-mcp)](https://www.npmjs.com/package/@preaverage/reddit-mcp)
+[![license](https://img.shields.io/npm/l/@preaverage/reddit-mcp)](LICENSE)
+
 Read Reddit from any MCP client. You log in once in a real browser, and the server handles everything after that with ordinary HTTP requests. There is no API key to get and no Reddit app to register.
 
 ## Why this one
@@ -19,8 +22,10 @@ npx -y @preaverage/reddit-mcp login
 Then point Claude Code at it:
 
 ```sh
-claude mcp add --transport stdio reddit -- npx -y @preaverage/reddit-mcp
+claude mcp add --scope user --transport stdio reddit -- npx -y @preaverage/reddit-mcp
 ```
+
+The user scope makes it available in every project rather than only the directory you ran that in.
 
 Any client that reads a JSON config takes the same command:
 
@@ -60,7 +65,7 @@ Download the `.mcpb` bundle for your platform from the releases page and open it
 ```sh
 go build -o reddit-mcp ./cmd/mcp-server
 ./reddit-mcp login
-claude mcp add reddit -- /path/to/reddit-mcp
+claude mcp add --scope user reddit -- /path/to/reddit-mcp
 ```
 
 ## Tools
@@ -99,7 +104,7 @@ Set `REDDIT_MCP_ENABLE_WRITES` to `1` where your client keeps environment variab
 Claude Code, using `-e`:
 
 ```sh
-claude mcp add reddit -e REDDIT_MCP_ENABLE_WRITES=1 -- npx -y @preaverage/reddit-mcp
+claude mcp add --scope user reddit -e REDDIT_MCP_ENABLE_WRITES=1 -- npx -y @preaverage/reddit-mcp
 ```
 
 Codex, using `--env` before the `--`:

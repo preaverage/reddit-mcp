@@ -156,6 +156,18 @@ func (s *Server) registerTools() {
 			return jsonResult(res), nil
 		})
 
+	addTool(s, "get_chats", "Recent Reddit chats (direct messages), newest first, with who each is with and the latest message. Chat requests not yet accepted are marked request.",
+		func(ctx context.Context, c *reddit.Client, in chatsIn) (*mcp.CallToolResult, error) {
+			r, err := c.Chats(ctx, in.Limit)
+			return result(r, err, false)
+		})
+
+	addTool(s, "get_chat_messages", "Messages in one Reddit chat, oldest first, by username or room id.",
+		func(ctx context.Context, c *reddit.Client, in chatMessagesIn) (*mcp.CallToolResult, error) {
+			r, err := c.ChatMessages(ctx, in.Chat, in.Limit, in.Before)
+			return result(r, err, in.Raw)
+		})
+
 	addPlainTool(s, "login", "Open a browser window so the user can log in to Reddit. Returns straight away if the saved session already works, unless force is set.",
 		func(ctx context.Context, in loginIn) (*mcp.CallToolResult, error) {
 			return s.login(ctx, time.Duration(in.TimeoutSeconds)*time.Second, in.Force)
@@ -201,6 +213,12 @@ func (s *Server) registerWriteTools() {
 		func(ctx context.Context, c *reddit.Client, in replyIn) (*mcp.CallToolResult, error) {
 			r, err := c.Reply(ctx, in.Parent, in.Text)
 			return result(r, err, in.Raw)
+		})
+
+	addTool(s, "send_chat_message", "Send a Reddit chat message (DM) to a user, or into an existing chat by room id. Starts a new chat when there is none with that user. This is sent privately under the logged-in account.",
+		func(ctx context.Context, c *reddit.Client, in sendChatIn) (*mcp.CallToolResult, error) {
+			r, err := c.SendChat(ctx, in.To, in.Text)
+			return result(r, err, false)
 		})
 
 	addTool(s, "edit", "Rewrite the body of your own text post or comment. Link posts have no body and cannot be edited.",

@@ -85,6 +85,8 @@ Reading Reddit:
 | `get_subreddit_posts` | A subreddit feed, or your home feed |
 | `get_subreddit` | Subreddit description and subscriber count |
 | `search_posts` | Search posts, optionally inside one subreddit |
+| `get_chats` | Your chats (direct messages), newest first, with chat requests marked |
+| `get_chat_messages` | The messages in one chat, by username or room id |
 
 Writing to Reddit, which is off until you turn it on:
 
@@ -94,8 +96,9 @@ Writing to Reddit, which is off until you turn it on:
 | `reply` | Comment on a post, or reply to another comment |
 | `edit` | Rewrite the body of your own text post or comment |
 | `delete` | Permanently remove your own post or comment |
+| `send_chat_message` | Send a chat message to a user, starting a chat if there is none |
 
-These four act publicly under your account, so the server leaves them out unless you ask for them. Without that a client cannot see them, let alone call them.
+These act under your account, publicly or in a chat,, so the server leaves them out unless you ask for them. Without that a client cannot see them, let alone call them.
 
 ### Turning on writes
 
@@ -196,7 +199,7 @@ Listings return an `after` cursor for the next page. Comment trees mark anything
 | Variable | Effect |
 | --- | --- |
 | `REDDIT_MCP_SESSION` | Keeps the session file somewhere other than the default path |
-| `REDDIT_MCP_ENABLE_WRITES` | Set to `1` or `true` to offer the four tools that post, edit, and delete |
+| `REDDIT_MCP_ENABLE_WRITES` | Set to `1` or `true` to offer the tools that post, edit, delete, and send chat messages |
 
 ## Privacy
 
@@ -204,7 +207,7 @@ Your session file holds real credentials, so it is written readable only by your
 
 No tool returns a cookie or a token, in `raw` mode or otherwise. `get_me` strips your email address, payment flags, and linked accounts before the raw response goes out. `logout` revokes the session with Reddit before deleting the local files, so the cookies stop working even if someone recovers them.
 
-A default install can only read. The four tools that write are not registered unless you set `REDDIT_MCP_ENABLE_WRITES` to `1` or `true`, which means a client cannot post, edit, or delete by accident. Nothing votes or touches your messages either way.
+A default install can only read. The tools that write are not registered unless you set `REDDIT_MCP_ENABLE_WRITES` to `1` or `true`, which means a client cannot post, edit, delete, or send a chat message by accident. Reading your chats needs no switch. Nothing votes either way.
 
 Bear in mind what enabling writes means. The model can publish under your name, and `delete` cannot be undone.
 

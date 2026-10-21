@@ -37,7 +37,13 @@ func userAgent(major string) string {
 }
 
 func firefoxMajor(executable string) string {
-	b, err := os.ReadFile(filepath.Join(filepath.Dir(executable), appIni))
+	dir := filepath.Dir(executable)
+
+	b, err := os.ReadFile(filepath.Join(dir, appIni))
+	if err != nil {
+		// In a macOS app bundle it sits in Contents/Resources, beside MacOS.
+		b, err = os.ReadFile(filepath.Join(dir, "..", "Resources", appIni))
+	}
 	if err != nil {
 		return fallbackMajor
 	}

@@ -69,6 +69,10 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("reddit returned HTTP %d: %s%s", e.Status, b[:cut], suffix)
 }
 
+func (e *APIError) blocked() bool {
+	return e.Status == http.StatusForbidden && strings.Contains(e.Body, "blocked by network security")
+}
+
 func New(sess *session.Session, reauth Reauth) (*Client, error) {
 	if sess == nil || sess.Token() == "" {
 		return nil, session.ErrNoSession
@@ -102,7 +106,53 @@ func (c *Client) Get(ctx context.Context, path string, query url.Values) ([]byte
 	}
 	query.Set(paramRawJSON, "1")
 
-	return c.request(ctx, http.MethodGet, apiBase+path+"?"+query.Encode(), nil)
+	out, err := c.request(ctx, http.MethodGet, apiBase+path+"?"+query.Encode(), nil)
+
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && apiErr.blocked() {
+		return c.webGet(ctx, path, query)
+	}
+
+	return out, err
+}
+
+// webGet reads the same listing from www.reddit.com's .json routes, signed in
+// by cookie rather than bearer token. Reddit's network security blocks some
+// oauth.reddit.com read paths (search, new, comments, api/info) for this
+// client while the www routes the site itself uses still answer.
+func (c *Client) webGet(ctx context.Context, path string, query url.Values) ([]byte, error) {
+	full := webBase + path + ".json?" + query.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, full, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header = c.buildHeaders(c.session().FetchHeaders, map[string]string{
+		hReferer:   defaultReferer,
+		hFetchDest: "empty",
+		hFetchMode: "cors",
+		hFetchSite: "same-origin",
+	})
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request %s: %w", full, err)
+	}
+	defer resp.Body.Close()
+
+	out, err := readBody(resp)
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", full, err)
+	}
+
+	c.syncCookies()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, &APIError{resp.StatusCode, string(out)}
+	}
+
+	return out, nil
 }
 
 // PostForm submits a form-encoded body. Reddit answers write endpoints with a

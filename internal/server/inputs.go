@@ -110,3 +110,19 @@ type loginIn struct {
 	TimeoutSeconds int  `json:"timeout_seconds,omitempty" jsonschema:"Seconds to wait for the login to finish (default 300)"`
 	Force          bool `json:"force,omitempty" jsonschema:"Open the browser even when the saved session still works"`
 }
+
+type chatsIn struct {
+	Limit int `json:"limit,omitempty" jsonschema:"Max chats to return, newest first"`
+}
+
+type chatMessagesIn struct {
+	Chat   string `json:"chat" jsonschema:"Username without u/, or a room id starting with !"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"1-100, default 25"`
+	Before string `json:"before,omitempty" jsonschema:"Cursor from a previous response, for older messages"`
+	rawOpt
+}
+
+type sendChatIn struct {
+	To   string `json:"to" jsonschema:"Username without u/, or a room id starting with !"`
+	Text string `json:"text" jsonschema:"Message text. Plain text"`
+}

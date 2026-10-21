@@ -18,6 +18,7 @@ const (
 	installDir  = "camoufox"
 	binaryUnix  = "camoufox-bin"
 	binaryWin   = "camoufox.exe"
+	binaryMac   = "Camoufox.app/Contents/MacOS/camoufox"
 	archiveName = "camoufox.zip"
 
 	binaryPerm = 0o755
@@ -52,12 +53,17 @@ func InstallDir() (string, error) {
 	return dir, os.MkdirAll(dir, dirPerm)
 }
 
+// binaryName is the executable's path inside the extracted archive. The macOS
+// build ships as an app bundle rather than a bare binary.
 func binaryName() string {
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		return binaryWin
+	case "darwin":
+		return binaryMac
+	default:
+		return binaryUnix
 	}
-
-	return binaryUnix
 }
 
 func Install() (string, error) {
